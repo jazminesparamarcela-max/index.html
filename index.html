@@ -1,234 +1,129 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Ploutoforos · Método de Opciones</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- TradingView -->
-  <script src="https://s3.tradingview.com/tv.js"></script>
-
-  <style>
-    :root {
-      --bg: #0d1117;
-      --panel: #161b22;
-      --text: #c9d1d9;
-      --muted: #8b949e;
-      --accent: #58a6ff;
-      --green: #2ea043;
-      --red: #f85149;
-      --yellow: #d29922;
-    }
-
-    * { box-sizing: border-box; font-family: system-ui, sans-serif; }
-    body { margin: 0; background: var(--bg); color: var(--text); }
-
-    header {
-      padding: 16px;
-      background: #010409;
-      border-bottom: 1px solid #30363d;
-    }
-
-    h1 { margin: 0; font-size: 20px; }
-    h2 { margin-top: 0; font-size: 16px; }
-
-    main {
-      display: grid;
-      grid-template-columns: 1fr 380px;
-      gap: 16px;
-      padding: 16px;
-    }
-
-    .panel {
-      background: var(--panel);
-      border-radius: 10px;
-      padding: 16px;
-      border: 1px solid #30363d;
-    }
-
-    label {
-      display: block;
-      margin-top: 10px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    select, input, button {
-      width: 100%;
-      margin-top: 6px;
-      padding: 8px;
-      background: #0d1117;
-      border: 1px solid #30363d;
-      color: var(--text);
-      border-radius: 6px;
-    }
-
-    button {
-      cursor: pointer;
-      background: var(--accent);
-      color: #000;
-      font-weight: 600;
-      margin-top: 12px;
-    }
-
-    .preset {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .preset button {
-      flex: 1;
-      background: #21262d;
-      color: var(--text);
-    }
-
-    .signal {
-      margin-top: 12px;
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 14px;
-    }
-
-    .buy { background: rgba(46,160,67,0.15); border: 1px solid var(--green); }
-    .sell { background: rgba(248,81,73,0.15); border: 1px solid var(--red); }
-    .neutral { background: rgba(210,153,34,0.15); border: 1px solid var(--yellow); }
-
-    footer {
-      padding: 12px;
-      text-align: center;
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    @media(max-width: 900px) {
-      main { grid-template-columns: 1fr; }
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Ploutoforos | Opciones</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body{margin:0;font-family:Arial;background:#0d1117;color:#e6edf3}
+header{padding:16px;font-size:20px;font-weight:bold;border-bottom:1px solid #30363d}
+.container{display:grid;grid-template-columns:1fr;gap:16px;padding:16px}
+.card{background:#161b22;border-radius:10px;padding:16px}
+h2{margin-top:0;font-size:16px;color:#58a6ff}
+input,select,button{width:100%;padding:8px;margin:6px 0;background:#0d1117;color:#e6edf3;border:1px solid #30363d;border-radius:6px}
+button{background:#238636;font-weight:bold;cursor:pointer}
+.score{font-size:28px;font-weight:bold}
+.green{color:#3fb950}
+.yellow{color:#d29922}
+.red{color:#f85149}
+.small{font-size:12px;color:#8b949e}
+canvas{margin-top:12px}
+</style>
 </head>
 
 <body>
 
-<header>
-  <h1>Ploutoforos · Método de Opciones</h1>
-</header>
+<header>Ploutoforos – Opciones & Estrategias</header>
 
-<main>
+<div class="container">
 
-  <!-- GRÁFICO -->
-  <div class="panel">
-    <h2>Gráfico de Velas + Contexto</h2>
-    <div id="tv_chart" style="height: 520px;"></div>
-  </div>
+<!-- SELECTOR -->
+<div class="card">
+<h2>🔎 Analizar ticker</h2>
+<select id="ticker">
+<option>AAPL</option>
+<option>MSFT</option>
+<option>NVDA</option>
+<option>AMZN</option>
+<option>TSLA</option>
+</select>
+<button onclick="analizar()">Analizar</button>
+<div class="small">Fuente: mercado USA (simulado → API real)</div>
+</div>
 
-  <!-- CONTROL -->
-  <div class="panel">
-    <h2>Panel Estratégico</h2>
+<!-- SCORE -->
+<div class="card">
+<h2>📊 Aptitud del activo</h2>
+<div id="scoreCall" class="score green">CALL: 82</div>
+<div id="scoreCovered" class="score yellow">COVERED CALL: 68</div>
+<div class="small">Cambia diariamente según volatilidad, volumen y contexto</div>
+</div>
 
-    <label>Ticker</label>
-    <select id="ticker">
-      <option value="AAPL">AAPL</option>
-      <option value="MSFT">MSFT</option>
-      <option value="SPY">SPY</option>
-      <option value="NVDA">NVDA</option>
-    </select>
+<!-- CONTEXTO -->
+<div class="card">
+<h2>📐 Contexto técnico</h2>
+<div>Tendencia: Alcista</div>
+<div>Soporte: 182</div>
+<div>Resistencia: 195</div>
+<div>Volatilidad diaria: Media</div>
+<canvas id="priceChart"></canvas>
+</div>
 
-    <label>Estrategia</label>
-    <select id="strategy">
-      <option value="buy_call">Compra de CALL</option>
-      <option value="covered_call">Venta de COVERED CALL</option>
-    </select>
+<!-- ESTRATEGIAS -->
+<div class="card">
+<h2>🟢 Compra de CALL – sugerencia</h2>
+<ul>
+<li>Strike: 190</li>
+<li>Vencimiento: 30 días</li>
+<li>Prima: 3.20</li>
+<li>Break-even: 193.20</li>
+<li>Motivo: ruptura de resistencia + momentum</li>
+</ul>
+<div class="small">Mejor horario: 11:30–13:00 NY</div>
+</div>
 
-    <label>Precio subyacente</label>
-    <input id="price" type="number" value="100" />
+<div class="card">
+<h2>🟠 Venta de COVERED CALL – sugerencia</h2>
+<ul>
+<li>Strike: 195</li>
+<li>Vencimiento: 21 días</li>
+<li>Prima: 2.10</li>
+<li>Rendimiento mensual: 1.1%</li>
+<li>Prob. ejercicio: Baja</li>
+</ul>
+<div class="small">Mejor horario: últimos 60 min del mercado</div>
+</div>
 
-    <label>Strike</label>
-    <input id="strike" type="number" value="105" />
+<!-- ROLLEO -->
+<div class="card">
+<h2>🔄 Evaluación de rolleo</h2>
+<div>Estado: Conviene capturar 70% y rollear</div>
+<div>Nuevo strike sugerido: 200</div>
+<div>Nuevo vencimiento: +30 días</div>
+</div>
 
-    <label>Prima</label>
-    <input id="premium" type="number" value="3" />
+<!-- REGISTRO -->
+<div class="card">
+<h2>📘 Registrar operación real</h2>
+<input placeholder="Ticker">
+<select>
+<option>Compra de CALL</option>
+<option>Venta de Covered Call</option>
+</select>
+<input placeholder="Strike">
+<input placeholder="Vencimiento">
+<input placeholder="Resultado">
+<button>Guardar</button>
+</div>
 
-    <div class="preset">
-      <button onclick="preset('cons')">Conservador</button>
-      <button onclick="preset('aggr')">Agresivo</button>
-    </div>
-
-    <button onclick="calculate()">Calcular señal</button>
-
-    <div id="output"></div>
-  </div>
-
-</main>
-
-<footer>
-  Ploutoforos · Donde el análisis se convierte en riqueza
-</footer>
+</div>
 
 <script>
-  function loadChart(symbol) {
-    new TradingView.widget({
-      container_id: "tv_chart",
-      symbol: symbol,
-      interval: "D",
-      theme: "dark",
-      style: "1",
-      locale: "es",
-      hide_side_toolbar: false,
-      allow_symbol_change: false,
-      height: "100%",
-      width: "100%"
-    });
-  }
+function analizar(){
+document.getElementById("scoreCall").innerText="CALL: "+(75+Math.floor(Math.random()*10));
+document.getElementById("scoreCovered").innerText="COVERED CALL: "+(60+Math.floor(Math.random()*10));
+}
 
-  loadChart("AAPL");
-
-  document.getElementById("ticker").addEventListener("change", e => {
-    document.getElementById("tv_chart").innerHTML = "";
-    loadChart(e.target.value);
-  });
-
-  function preset(type) {
-    if (type === "cons") {
-      strike.value = Number(price.value) * 1.05;
-      premium.value = 2;
-    } else {
-      strike.value = Number(price.value) * 1.02;
-      premium.value = 4;
-    }
-  }
-
-  function calculate() {
-    const p = Number(price.value);
-    const s = Number(strike.value);
-    const pr = Number(premium.value);
-    const strat = strategy.value;
-
-    let html = "";
-
-    if (strat === "buy_call") {
-      const breakeven = s + pr;
-      html = `
-        <div class="signal buy">
-          📈 <b>Compra de CALL</b><br>
-          Break-even: ${breakeven.toFixed(2)}<br>
-          Riesgo limitado a la prima<br>
-          Escenario ideal: ruptura alcista
-        </div>
-      `;
-    } else {
-      const maxGain = pr;
-      html = `
-        <div class="signal sell">
-          🧾 <b>Venta de COVERED CALL</b><br>
-          Ganancia máxima: ${maxGain.toFixed(2)}<br>
-          Ingreso por prima<br>
-          Escenario ideal: lateral / levemente alcista
-        </div>
-      `;
-    }
-
-    output.innerHTML = html;
-  }
+const ctx=document.getElementById('priceChart');
+new Chart(ctx,{
+type:'line',
+data:{
+labels:['-6','-5','-4','-3','-2','-1','Hoy'],
+datasets:[{label:'Precio',data:[180,182,185,187,190,192,194],borderWidth:2}]
+},
+options:{plugins:{legend:{display:false}}}
+});
 </script>
 
 </body>
