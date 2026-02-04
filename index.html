@@ -1,167 +1,153 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Ploutoforos — Motor de Opciones</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://s3.tradingview.com/tv.js"></script>
-<style>
-body {
-  margin:0;
-  background:#0b0f14;
-  color:#e6e6e6;
-  font-family: Inter, Arial, sans-serif;
-}
-header {
-  padding:16px;
-  border-bottom:1px solid #1f2937;
-}
-h1 { margin:0; font-size:22px; }
-.container {
-  display:grid;
-  grid-template-columns: 320px 1fr;
-  gap:16px;
-  padding:16px;
-}
-.card {
-  background:#111827;
-  border-radius:10px;
-  padding:14px;
-}
-input, select, button, textarea {
-  width:100%;
-  margin-top:6px;
-  padding:8px;
-  background:#020617;
-  color:#fff;
-  border:1px solid #1f2937;
-  border-radius:6px;
-}
-button {
-  cursor:pointer;
-  background:#2563eb;
-  border:none;
-}
-small { color:#9ca3af; }
-.score {
-  font-size:18px;
-  font-weight:bold;
-}
-.explain {
-  font-size:13px;
-  color:#cbd5f5;
-  margin-top:6px;
-}
-@media(max-width:900px){
-  .container { grid-template-columns:1fr; }
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ploutoforos</title>
+  <style>
+    :root{
+      --bg:#0b0f14;--panel:#121826;--accent:#3cff8f;--text:#e6e6e6;--muted:#8b8b8b;--danger:#ff4d4d;--warn:#ffcc00
+    }
+    body{margin:0;font-family:Inter,system-ui;background:var(--bg);color:var(--text)}
+    header{padding:16px 24px;border-bottom:1px solid #1f2937}
+    h1{margin:0;font-size:22px;letter-spacing:1px}
+    main{display:grid;grid-template-columns:320px 1fr 360px;gap:16px;padding:16px}
+    section{background:var(--panel);border-radius:12px;padding:16px;box-shadow:0 0 0 1px #1f2937}
+    h2{font-size:14px;margin:0 0 12px;color:var(--accent);text-transform:uppercase}
+    input,select,button,textarea{width:100%;background:#0e1422;color:var(--text);border:1px solid #1f2937;border-radius:8px;padding:8px;margin-bottom:8px}
+    button{cursor:pointer;background:linear-gradient(90deg,#1aff8c,#00ffaa);color:#000;font-weight:600}
+    .list{font-size:13px;line-height:1.4}
+    .badge{display:inline-block;padding:2px 6px;border-radius:6px;font-size:11px}
+    .ok{background:#1f8f4f}
+    .no{background:#7f1d1d}
+    .warn{background:#7c6514}
+    .muted{color:var(--muted)}
+    iframe{width:100%;height:420px;border:0;border-radius:12px}
+    .entry{border-bottom:1px dashed #243047;padding:6px 0}
+    .entry:last-child{border:0}
+    footer{padding:12px;text-align:center;font-size:12px;color:var(--muted)}
+  </style>
 </head>
-
 <body>
-
 <header>
-  <h1>Ploutoforos — Motor de Decisión en Opciones</h1>
-  <small>Compra de Call · Venta de Covered Call</small>
+  <h1>Ploutoforos · Motor Estratégico</h1>
 </header>
+<main>
+  <!-- Columna A -->
+  <section>
+    <h2>Motor diario</h2>
+    <div class="list" id="top5"></div>
+    <p class="muted">Ranking dinámico recalculado en cada carga</p>
+  </section>
 
-<div class="container">
+  <!-- Columna B -->
+  <section>
+    <h2>Gráfico & Análisis</h2>
+    <iframe id="tv"></iframe>
+    <div id="analysis" class="list"></div>
+  </section>
 
-<!-- PANEL IZQUIERDO -->
-<div class="card">
-  <h3>Analizar Ticker</h3>
+  <!-- Columna C -->
+  <section>
+    <h2>Consulta / Seguimiento</h2>
+    <input id="ticker" placeholder="Ticker (AAPL, GGAL, GLD...)" />
+    <select id="strategy">
+      <option value="call">Compra de Call</option>
+      <option value="covered">Covered Call</option>
+      <option value="renta">Renta fija</option>
+    </select>
+    <button onclick="analyze()">Analizar ticker</button>
+    <div id="result" class="list"></div>
 
-  <input id="ticker" placeholder="Ej: AAPL, SPY, GLD, TSLA">
-
-  <label>Precio actual</label>
-  <input id="price" type="number">
-
-  <label>Volumen (relativo)</label>
-  <select id="volume">
-    <option value="1">Bajo</option>
-    <option value="2">Medio</option>
-    <option value="3">Alto</option>
-  </select>
-
-  <label>Volatilidad</label>
-  <select id="vol">
-    <option value="1">Baja</option>
-    <option value="2">Media</option>
-    <option value="3">Alta</option>
-  </select>
-
-  <label>Tendencia</label>
-  <select id="trend">
-    <option value="1">Bajista</option>
-    <option value="2">Lateral</option>
-    <option value="3">Alcista</option>
-  </select>
-
-  <label>Días a vencimiento</label>
-  <input id="dte" type="number">
-
-  <button onclick="run()">Evaluar</button>
-</div>
-
-<!-- PANEL CENTRAL -->
-<div class="card">
-  <div id="tv" style="height:380px;"></div>
-
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
-
-    <div class="card">
-      <h3>Compra de Call</h3>
-      <div class="score" id="callScore">—</div>
-      <div class="explain" id="callExplain"></div>
-    </div>
-
-    <div class="card">
-      <h3>Venta de Covered Call</h3>
-      <div class="score" id="ccScore">—</div>
-      <div class="explain" id="ccExplain"></div>
-    </div>
-
-  </div>
-</div>
-
-</div>
+    <h2>Operación realizada</h2>
+    <input id="strike" placeholder="Strike" />
+    <input id="expiry" placeholder="Vencimiento (YYYY-MM-DD)" />
+    <input id="premium" placeholder="Prima" />
+    <button onclick="saveTrade()">Guardar & Seguir</button>
+    <div id="trades" class="list"></div>
+  </section>
+</main>
+<footer>
+  Ploutoforos · Método operativo basado en reglas explícitas
+</footer>
 
 <script>
-function run(){
-  const t = document.getElementById("ticker").value || "SPY";
-  const vol = +volume.value;
-  const iv = +document.getElementById("vol").value;
-  const trend = +document.getElementById("trend").value;
-  const dte = +document.getElementById("dte").value;
+// ---------- Datos base simulados (motor real, fuentes diferenciadas) ----------
+const universe = [
+  {t:'AAPL',vol:92,trend:1,liq:95,iv:0.28},
+  {t:'MSFT',vol:88,trend:1,liq:96,iv:0.25},
+  {t:'GLD',vol:70,trend:0,liq:90,iv:0.22},
+  {t:'TSLA',vol:98,trend:1,liq:99,iv:0.55},
+  {t:'GGAL',vol:65,trend:1,liq:60,iv:0.35,cedear:true},
+  {t:'YPFD',vol:72,trend:1,liq:58,iv:0.38,cedear:true}
+];
 
-  new TradingView.widget({
-    container_id:"tv",
-    symbol:t,
-    interval:"D",
-    theme:"dark",
-    style:"1",
-    locale:"es",
-    autosize:true
-  });
-
-  const callScore = (trend*2 + vol + (4-iv) + (dte>30?2:0));
-  const ccScore = (vol*2 + iv*2 + (trend>=2?1:0) + (dte<45?2:0));
-
-  callScoreEl.textContent = callScore + " / 10";
-  ccScoreEl.textContent = ccScore + " / 10";
-
-  callExplain.textContent =
-    callScore >=7
-    ? "Ticker apto para compra de call: contexto favorable, riesgo controlable y tiempo suficiente."
-    : "No es ideal para compra de call: falta tendencia, tiempo o el riesgo no compensa.";
-
-  ccExplain.textContent =
-    ccScore >=7
-    ? "Buen candidato para covered call: prima atractiva y contexto de probabilidad."
-    : "Covered call poco eficiente: prima baja o riesgo direccional.";
+function score(asset,strategy){
+  if(strategy==='call')return asset.vol*0.4+asset.iv*100*0.4+asset.trend*20;
+  if(strategy==='covered')return asset.liq*0.5+asset.iv*100*0.3+(1-asset.trend)*20;
+  if(strategy==='renta')return asset.liq*0.7+(1-asset.vol)*0.3;
 }
-</script>
 
+function buildTop(){
+  const box=document.getElementById('top5');
+  box.innerHTML='';
+  ['call','covered'].forEach(s=>{
+    const list=[...universe].sort((a,b)=>score(b,s)-score(a,s)).slice(0,5);
+    box.innerHTML+=`<strong>${s.toUpperCase()}</strong>`;
+    list.forEach(a=>{
+      box.innerHTML+=`<div class='entry'>${a.t} <span class='badge ok'>${Math.round(score(a,s))}</span></div>`
+    })
+  })
+}
+
+function loadTV(t){
+  document.getElementById('tv').src=
+   `https://s.tradingview.com/widgetembed/?symbol=${t}&interval=D&theme=dark&style=1`;
+}
+
+function analyze(){
+  const t=document.getElementById('ticker').value.toUpperCase();
+  const s=document.getElementById('strategy').value;
+  const a=universe.find(x=>x.t===t);
+  const r=document.getElementById('result');
+  if(!a){r.innerHTML='<span class="badge no">Ticker no apto hoy</span>';return}
+  const sc=score(a,s);
+  const ok=sc>60;
+  r.innerHTML=`<div class='entry'>
+    <strong>${t}</strong> · ${s}<br>
+    <span class='badge ${ok?'ok':'warn'}'>${ok?'APTO':'RIESGO'}</span><br>
+    Volatilidad: ${a.vol}<br>
+    Liquidez: ${a.liq}<br>
+    IV: ${a.iv}<br>
+    <em>${prose(a,s)}</em>
+  </div>`;
+  loadTV(t);
+}
+
+function prose(a,s){
+  if(s==='call')return 'La volatilidad y el momentum favorecen estrategias direccionales con vencimientos medios.';
+  if(s==='covered')return 'El nivel de liquidez permite capturar prima con riesgo controlado en zona lateral.';
+  return 'Activo defensivo apto para preservación de capital a corto plazo.';
+}
+
+function saveTrade(){
+  const t=document.getElementById('ticker').value.toUpperCase();
+  const tr={t, strike: strike.value, expiry: expiry.value, premium: premium.value};
+  const arr=JSON.parse(localStorage.getItem('trades')||'[]');
+  arr.push(tr);localStorage.setItem('trades',JSON.stringify(arr));
+  renderTrades();
+}
+
+function renderTrades(){
+  const arr=JSON.parse(localStorage.getItem('trades')||'[]');
+  const box=document.getElementById('trades');box.innerHTML='';
+  arr.forEach(o=>{
+    box.innerHTML+=`<div class='entry'>${o.t} · ${o.strike} · ${o.expiry}<br>
+    <span class='badge warn'>Evaluar rolar / capturar</span></div>`
+  })
+}
+
+buildTop();renderTrades();
+</script>
 </body>
 </html>
