@@ -2,109 +2,107 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Ploutoforos — Método de Opciones</title>
+  <title>Ploutoforos · Método de Opciones</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- TradingView -->
   <script src="https://s3.tradingview.com/tv.js"></script>
 
   <style>
-    body {
-      margin: 0;
-      font-family: Inter, Arial, sans-serif;
-      background: #0e1117;
-      color: #e6edf3;
+    :root {
+      --bg: #0d1117;
+      --panel: #161b22;
+      --text: #c9d1d9;
+      --muted: #8b949e;
+      --accent: #58a6ff;
+      --green: #2ea043;
+      --red: #f85149;
+      --yellow: #d29922;
     }
+
+    * { box-sizing: border-box; font-family: system-ui, sans-serif; }
+    body { margin: 0; background: var(--bg); color: var(--text); }
 
     header {
-      padding: 24px;
-      background: linear-gradient(135deg, #111827, #020617);
-      border-bottom: 1px solid #1f2937;
+      padding: 16px;
+      background: #010409;
+      border-bottom: 1px solid #30363d;
     }
 
-    h1 {
-      margin: 0;
-      font-size: 28px;
-    }
+    h1 { margin: 0; font-size: 20px; }
+    h2 { margin-top: 0; font-size: 16px; }
 
-    h2 {
-      margin-top: 40px;
-      border-left: 4px solid #22c55e;
-      padding-left: 12px;
-    }
-
-    .container {
-      padding: 24px;
-      max-width: 1200px;
-      margin: auto;
-    }
-
-    .grid {
+    main {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
+      grid-template-columns: 1fr 380px;
+      gap: 16px;
+      padding: 16px;
     }
 
-    @media (max-width: 900px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .card {
-      background: #020617;
-      border: 1px solid #1f2937;
-      border-radius: 12px;
-      padding: 20px;
+    .panel {
+      background: var(--panel);
+      border-radius: 10px;
+      padding: 16px;
+      border: 1px solid #30363d;
     }
 
     label {
       display: block;
       margin-top: 10px;
-      font-size: 14px;
-      color: #9ca3af;
+      font-size: 13px;
+      color: var(--muted);
     }
 
-    input, select {
+    select, input, button {
       width: 100%;
-      padding: 10px;
-      margin-top: 4px;
-      background: #020617;
-      color: #e6edf3;
-      border: 1px solid #374151;
+      margin-top: 6px;
+      padding: 8px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      color: var(--text);
       border-radius: 6px;
     }
 
     button {
-      margin-top: 16px;
-      padding: 12px;
-      width: 100%;
-      background: #22c55e;
-      color: #020617;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
       cursor: pointer;
+      background: var(--accent);
+      color: #000;
+      font-weight: 600;
+      margin-top: 12px;
+    }
+
+    .preset {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .preset button {
+      flex: 1;
+      background: #21262d;
+      color: var(--text);
     }
 
     .signal {
       margin-top: 12px;
-      padding: 12px;
+      padding: 10px;
       border-radius: 8px;
-      font-weight: bold;
-      text-align: center;
+      font-size: 14px;
     }
 
-    .call { background: #14532d; color: #22c55e; }
-    .covered { background: #3f2a00; color: #facc15; }
-    .neutral { background: #1f2937; color: #9ca3af; }
+    .buy { background: rgba(46,160,67,0.15); border: 1px solid var(--green); }
+    .sell { background: rgba(248,81,73,0.15); border: 1px solid var(--red); }
+    .neutral { background: rgba(210,153,34,0.15); border: 1px solid var(--yellow); }
 
     footer {
-      margin-top: 60px;
-      padding: 24px;
+      padding: 12px;
       text-align: center;
-      color: #6b7280;
-      border-top: 1px solid #1f2937;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    @media(max-width: 900px) {
+      main { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -112,136 +110,124 @@
 <body>
 
 <header>
-  <h1>Ploutoforos</h1>
-  <p>El método donde la opción cumple su función</p>
+  <h1>Ploutoforos · Método de Opciones</h1>
 </header>
 
-<div class="container">
+<main>
 
-  <!-- CHART -->
-  <h2>📈 Contexto de mercado</h2>
-  <div class="card">
-    <div id="tvchart" style="height: 500px;"></div>
+  <!-- GRÁFICO -->
+  <div class="panel">
+    <h2>Gráfico de Velas + Contexto</h2>
+    <div id="tv_chart" style="height: 520px;"></div>
   </div>
 
-  <!-- GRID -->
-  <div class="grid">
+  <!-- CONTROL -->
+  <div class="panel">
+    <h2>Panel Estratégico</h2>
 
-    <!-- SEÑALES -->
-    <div class="card">
-      <h3>🔔 Señales Ploutoforos</h3>
+    <label>Ticker</label>
+    <select id="ticker">
+      <option value="AAPL">AAPL</option>
+      <option value="MSFT">MSFT</option>
+      <option value="SPY">SPY</option>
+      <option value="NVDA">NVDA</option>
+    </select>
 
-      <label>Ticker</label>
-      <select id="ticker">
-        <option value="AAPL">AAPL</option>
-        <option value="MSFT">MSFT</option>
-        <option value="SPY">SPY</option>
-        <option value="TSLA">TSLA</option>
-      </select>
+    <label>Estrategia</label>
+    <select id="strategy">
+      <option value="buy_call">Compra de CALL</option>
+      <option value="covered_call">Venta de COVERED CALL</option>
+    </select>
 
-      <label>Contexto</label>
-      <select id="context">
-        <option value="alcista">Alcista</option>
-        <option value="lateral">Lateral</option>
-        <option value="volatil">Volátil</option>
-      </select>
+    <label>Precio subyacente</label>
+    <input id="price" type="number" value="100" />
 
-      <button onclick="signal()">Evaluar</button>
+    <label>Strike</label>
+    <input id="strike" type="number" value="105" />
 
-      <div id="signalBox" class="signal neutral">
-        Esperando evaluación…
-      </div>
+    <label>Prima</label>
+    <input id="premium" type="number" value="3" />
+
+    <div class="preset">
+      <button onclick="preset('cons')">Conservador</button>
+      <button onclick="preset('aggr')">Agresivo</button>
     </div>
 
-    <!-- PAYOFF -->
-    <div class="card">
-      <h3>💰 Simulador de Payoff</h3>
+    <button onclick="calculate()">Calcular señal</button>
 
-      <label>Precio actual</label>
-      <input id="price" type="number" value="100" />
-
-      <label>Strike</label>
-      <input id="strike" type="number" value="105" />
-
-      <label>Prima</label>
-      <input id="premium" type="number" value="3" />
-
-      <label>Estrategia</label>
-      <select id="strategy">
-        <option value="call">Compra de CALL</option>
-        <option value="covered">Venta de COVERED CALL</option>
-      </select>
-
-      <button onclick="payoff()">Calcular</button>
-
-      <div id="payoffResult" class="signal neutral">
-        —
-      </div>
-    </div>
-
+    <div id="output"></div>
   </div>
 
-  <!-- EDUCACIÓN -->
-  <h2>📚 Método Ploutoforos</h2>
-  <div class="card">
-    <p><strong>1.</strong> La opción tiene una función, no una promesa.</p>
-    <p><strong>2.</strong> La salida importa más que la entrada.</p>
-    <p><strong>3.</strong> Cuando la prima está capturada, la opción ya cumplió.</p>
-    <p><strong>4.</strong> Covered Call es renta, no esperanza.</p>
-  </div>
-
-</div>
+</main>
 
 <footer>
-  Ploutoforos © 2026 — Método de opciones
+  Ploutoforos · Donde el análisis se convierte en riqueza
 </footer>
 
 <script>
-  new TradingView.widget({
-    container_id: "tvchart",
-    symbol: "NASDAQ:AAPL",
-    interval: "D",
-    theme: "dark",
-    style: "1",
-    locale: "es",
-    hide_side_toolbar: false,
-    allow_symbol_change: true
+  function loadChart(symbol) {
+    new TradingView.widget({
+      container_id: "tv_chart",
+      symbol: symbol,
+      interval: "D",
+      theme: "dark",
+      style: "1",
+      locale: "es",
+      hide_side_toolbar: false,
+      allow_symbol_change: false,
+      height: "100%",
+      width: "100%"
+    });
+  }
+
+  loadChart("AAPL");
+
+  document.getElementById("ticker").addEventListener("change", e => {
+    document.getElementById("tv_chart").innerHTML = "";
+    loadChart(e.target.value);
   });
 
-  function signal() {
-    const ctx = document.getElementById("context").value;
-    const box = document.getElementById("signalBox");
-
-    if (ctx === "alcista") {
-      box.className = "signal call";
-      box.innerText = "🔼 COMPRA DE CALL sugerida";
-    } else if (ctx === "lateral") {
-      box.className = "signal covered";
-      box.innerText = "🟡 VENTA DE COVERED CALL sugerida";
+  function preset(type) {
+    if (type === "cons") {
+      strike.value = Number(price.value) * 1.05;
+      premium.value = 2;
     } else {
-      box.className = "signal neutral";
-      box.innerText = "⚠️ No operar — esperar";
+      strike.value = Number(price.value) * 1.02;
+      premium.value = 4;
     }
   }
 
-  function payoff() {
-    const p = +price.value;
-    const s = +strike.value;
-    const pr = +premium.value;
-    const st = strategy.value;
-    const box = document.getElementById("payoffResult");
+  function calculate() {
+    const p = Number(price.value);
+    const s = Number(strike.value);
+    const pr = Number(premium.value);
+    const strat = strategy.value;
 
-    if (st === "call") {
-      box.className = "signal call";
-      box.innerText =
-        "Break-even: " + (s + pr) +
-        " | Riesgo limitado | Upside abierto";
+    let html = "";
+
+    if (strat === "buy_call") {
+      const breakeven = s + pr;
+      html = `
+        <div class="signal buy">
+          📈 <b>Compra de CALL</b><br>
+          Break-even: ${breakeven.toFixed(2)}<br>
+          Riesgo limitado a la prima<br>
+          Escenario ideal: ruptura alcista
+        </div>
+      `;
     } else {
-      box.className = "signal covered";
-      box.innerText =
-        "Ganancia máx: " + pr +
-        " | Protección parcial | Renta controlada";
+      const maxGain = pr;
+      html = `
+        <div class="signal sell">
+          🧾 <b>Venta de COVERED CALL</b><br>
+          Ganancia máxima: ${maxGain.toFixed(2)}<br>
+          Ingreso por prima<br>
+          Escenario ideal: lateral / levemente alcista
+        </div>
+      `;
     }
+
+    output.innerHTML = html;
   }
 </script>
 
